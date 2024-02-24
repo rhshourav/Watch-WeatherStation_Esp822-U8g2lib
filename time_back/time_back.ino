@@ -1,4 +1,4 @@
-#include <Arduino.h>
+//#include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 #include <U8g2lib.h>
@@ -18,6 +18,14 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C
 u8g2(U8G2_R0, 12, 14, U8X8_PIN_NONE);
 unsigned long lastDisplayTime = 0;
 const unsigned long displayInterval = 1000;//300000;  // 5 minutes in milliseconds
+
+
+int switchState = 0;
+int numIncr = 5;
+int Blevel ;
+int del = 100;
+
+
 
 String getCurrentTime() {
   // Get current time in 12-hour format
@@ -72,8 +80,29 @@ String getCurrentDate() {
 
   return String(formattedDate);
 }
+void ledFade(){
+    if (switchState == 0){
+    analogWrite(BUILTIN_LED, Blevel);
+    Blevel = Blevel+ numIncr;
+    if (Blevel == 255){
+      switchState = 1;
+    }
+    delay(del);
+
+  }
+  if (switchState == 1){
+    analogWrite(BUILTIN_LED, Blevel);
+    Blevel = Blevel - numIncr;
+    if (Blevel == 0){
+      switchState = 0;
+    }
+    delay(del);
+  }
+}
+
 void setup(){
 	Serial.begin(115200);
+  pinMode(BUILTIN_LED, OUTPUT);
 	Serial.println("Initing Program");
 	u8g2.begin();
   WiFi.begin(ssid, pass);
@@ -88,10 +117,6 @@ void setup(){
 
 void loop(){
   unsigned long currentMillis = millis();
-  ////////////////////////////////////
-  Serial.println(getCurrentTime());
-  Serial.println(getCurrentWeekday().length());
-  ////////////////////////////////////
 
   if (currentMillis - lastDisplayTime >= displayInterval) {
     lastDisplayTime = currentMillis;
@@ -104,10 +129,7 @@ void loop(){
     u8g2.setFont( u8g2_font_bitcasual_tf);
     u8g2.drawStr(90, 27, getCurrentPeriod().c_str());
     u8g2.setFont( u8g2_font_sisterserif_tr);
-    u8g2.drawStr(90, 45, getCurrentSeconds().c_str());
-    u8g2.setFont(  u8g2_font_adventurer_tr);
-    u8g2.drawStr(90, 45, getCurrentSeconds().c_str());
-    
+    u8g2.drawStr(90, 45, getCurrentSeconds().c_str());  
     int textPosition = ((ScreenWidth - getCurrentWeekday().length())/2);
     u8g2.setFont( u8g2_font_sisterserif_tr);
     u8g2.drawStr(textPosition, 60, getCurrentWeekday().c_str());
@@ -115,4 +137,5 @@ void loop(){
     
 
 }
+  ledFade();
 }
