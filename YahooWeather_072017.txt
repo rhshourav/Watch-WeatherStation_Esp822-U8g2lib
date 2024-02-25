@@ -1,0 +1,196 @@
+/***********************************************************************
+last review on jun 2017
+The W5200 on Ethernet Shield V2.0 by seeed attached to SPI bus as follows:
+Library EthernetV02 is change for using with arduino IDE 1.6 or more 
+ **| W5200 - Arduino|
+ **| MOSI  - MOSI   |
+ **| MISO  - MISO   |
+ **| CLK   - SCK    |
+ **| CS    - pin 10 |
+ SD card attached to SPI bus as follows:
+ **| SD    - Arduino|
+ **| MOSI  - MOSI   |
+ **| MISO  - MISO   |
+ **| CLK   - SCK    |
+ **| CS    - pin 4  |
+ Thanks Mr. David - for your decode xml weather 
+ *************************************************************************/
+
+#include <SD.h>
+#include <EthernetV2_0.h>
+#include <EthernetUdpV2_0.h> 
+#include <SPI.h>
+//#include <TextFinder.h>
+
+byte mac[] = {0x00, 0xAA, 0xBB, 0xCC, 0xDE, 0x02 }; // OK
+IPAddress ip(192, 168, 137, 100);     // IP of Arduino Etheret Boad
+//IPAddress Remote(192, 168, 137, 99);  // IP of destination data.
+//unsigned int localPort = 1234;        // local port to listen on
+
+// An EthernetUDP instance to let us send and receive packets over UDP
+EthernetUDP Udp;
+#define W5200_CS  10
+#define SDCARD_CS 4
+#define UDPActive 2
+#define SD_Read 3
+#define LED_W 6
+char wserver[] = "query.yahooapis.com";
+String location = "/v1/public/yql?format=xml&q=select+*+from+weather.forecast+where+woeid=719450+and+u='c'";
+// line control query.yahooapis.com/v1/public/yql?format=xml&q=select+location,units.temperature,units.speed,wind.direction,wind.speed,item.condition+from+weather.forecast+where+woeid=719450+and+u='c'
+EthernetClient LANclient;
+//File myFile;
+//char dati[25];
+//File fh;
+//char fileName[13] = "Weather.txt";
+//int i;
+int iw; // indice di scrittura
+int ir; // indice di scrittura
+byte Counter;
+boolean showall = true; // show all from yahoo weather on monitor
+boolean useserial = true; // toggle serial output
+
+
+void setup()  { 
+      Counter=0;
+      Serial.begin(19200);  // Open serial communications and wait for port to open:
+      pinMode(UDPActive, OUTPUT);
+      pinMode(SD_Read, OUTPUT);
+      pinMode(LED_W, OUTPUT);
+      pinMode(W5200_CS, OUTPUT);
+      digitalWrite(W5200_CS,HIGH);
+      pinMode(SDCARD_CS,OUTPUT);
+      LANclient.stop(); LANclient.flush(); // reset client fb
+    //  if (!SD.begin(SDCARD_CS)) {Serial.println("initialization SD failed!"); return;}
+      Serial.println("initialization done.");
+      Ethernet.begin(mac,ip);
+     // Udp.begin(localPort);          // UDP PORT SETTING
+    /*  myFile = SD.open(fileName);    // re-open the file for reading:
+     // if (myFile) { digitalWrite(SD_Read,HIGH);
+     //               SD.remove(fileName); Serial.println("File eliminato!");
+      //              myFile.close();
+                    i=0;
+                    delay(500);digitalWrite(SD_Read,LOW); } // wait 2 hour before refresh data:  // close the file:
+      myFile = SD.open(fileName,FILE_WRITE); 
+      myFile.println("..");
+      myFile.close();   */   }
+
+void loop(){  getweather(showall);
+              delay(300000);
+              iw=0;
+              ir=0;
+            }
+
+
+void getweather(boolean fullprint){ float fspeed, ftemp, fdirection, fhumidity, fpressure, FLftemp[9],FHftemp[9];
+                                    String synopsis, date, wlocation, Fsynopsis[9], Fdate[9] ;
+                                    int icode, Ficode[9];
+                                    icode = 3200; // in case weather code is not found
+                                    String timestring;
+                                    String  wunits, 
+                                            tunits, wdirection, wspeed,whumidity, wpressure, temp, thiscode,FLtemp[9],FHtemp[9], Fthiscode[9];
+                                    unsigned long timenow;
+  if (useserial){ Serial.print(F("\nStarting connection to server.. "));
+                  Serial.println(wserver);
+                }
+ 
+  if (LANclient.connect(wserver, 80)) {if(useserial) Serial.println(F("Connected to server.."));     // Make a HTTP request:
+                                       LANclient.println("GET " + location + " HTTP/1.1");
+                                       LANclient.println("Host: " + String(wserver));
+                                       LANclient.println(F("Connection: close"));
+                                       LANclient.println();
+                                       timenow = millis();
+                                       String recline = "";
+  while(LANclient.connected()) {
+    while (LANclient.available()) {char c = LANclient.read();
+                 if(c==62) recline = recline + ">";
+                 if (c == 10 || c == 62) { // use ">" as a line terminator
+                 if(useserial && fullprint) Serial.println(recline);
+                 //### CITY  ###
+                            if (recline.indexOf(F("weather:location")) > 0 ) { wlocation =  par(recline, F("city"));}
+                                       
+                            if (recline.indexOf(F("weather:units")) > 0 )    { wunits =  par(recline, F("speed"));
+                                                                               tunits =  par(recline, F("temperature"));}
+                  //### WIND  ###
+                             if (recline.indexOf(F("weather:wind")) > 0 )    { wdirection = par(recline, F("direction"));
+                                                                               fdirection = wdirection.toFloat();
+                                                                               wspeed =  par(recline, F("speed"));
+                                                                               fspeed = wspeed.toFloat();}
+                  //### HUMIDITY - ATMOSPHERIC PRESSURE  ###                                              
+                             if (recline.indexOf(F("weather:atmosphere")) > 0 ) { whumidity = par(recline, F("humidity"));
+                                                                                  fhumidity = whumidity.toFloat();
+                                                                                  wpressure =  par(recline, F("pressure"));
+                                                                                  fpressure = wpressure.toFloat();}
+                  //### CURRENT CONDITION  ###                                                                
+                              if (recline.indexOf(F("weather:condition")) > 0 ){ date = par(recline, F("date"));
+                                                                                 synopsis =  par(recline, F("text"));
+                                                                                 thiscode =  par(recline, F("code"));
+                                                                                 icode = thiscode.toInt();          
+                                                                                 temp =  par(recline, F("temp"));
+                                                                                 ftemp = temp.toFloat();}
+                   //### FORECAST CONDITION  ###                                                          
+                                 if (recline.indexOf(F("weather:forecast")) > 0 ) {Fdate[iw] = par(recline, F("date"));
+                                                                                   Fsynopsis[iw] =  par(recline, F("text"));
+                                                                                   Fthiscode[iw] =  par(recline, F("code"));
+                                                                                   Ficode[iw] = Fthiscode[iw].toInt();          
+                                                                                   FLtemp[iw] =  par(recline, F("low"));
+                                                                                   FLftemp[iw]= FLtemp[iw].toFloat();
+                                                                                   FHtemp[iw] =  par(recline, F("high"));
+                                                                                   FHftemp[iw] = FHtemp[iw].toFloat();
+                                                                                   delay(100);
+                                                                                   iw=iw+1;}
+                                                                           
+                                 recline = "";}
+                        else if (c>31 && c<127) recline = recline + String(c);}
+                        iw=0;
+                        if (millis()-timenow > 30000)break;   // get out if stuck
+                        } // end  
+                               
+if(useserial)Serial.println(F("disconnecting from server."));
+LANclient.stop();
+//if(tunits != "C") ftemp = (ftemp - 32.0) * 5.0 / 9.0; // convert to Centigrade 
+//if(wunits == "km/h") fspeed = fspeed * 0.621371; // mph
+if(useserial){   ir=0;
+                  Serial.println("Start Weather Decode");
+                  Serial.print(wlocation + ", ");
+                  Serial.println(date);
+                  Serial.print(synopsis);
+                  Serial.println(" " + thiscode);
+                  Serial.print("Wind: Direction ");
+                  Serial.println(fdirection, 1);
+                  Serial.print("Speed: ");
+                  Serial.print(fspeed, 2);
+                  Serial.println("km/h ");
+                  Serial.print("Temp ");
+                  Serial.print(ftemp, 1);
+                  Serial.println(" C");
+                  Serial.print("Humidity ");
+                  Serial.print(fhumidity, 3);
+                  Serial.println("% ");
+                  Serial.print(("Pressure "));
+                  Serial.print(fpressure, 2);
+                  Serial.println(" mbar ");
+                  // cycle for to print forecast data, max value of ir (index read) increase o reduce forecast day  ...  
+                   for (int ir=1; ir <6; ir=ir+1){ Serial.println(Fdate[ir]);
+                                                  Serial.print(Fsynopsis[ir]);
+                                                  Serial.println(" " + Fthiscode[ir]);
+                                                  Serial.print("Temp LOW ");
+                                                  Serial.print(FLftemp[ir], 1);
+                                                  Serial.println(" C");
+                                                  Serial.print("Temp HIGH ");
+                                                  Serial.print(FHftemp[ir], 1);
+                                                  Serial.println(" C");
+                                                }
+               }
+              else if (useserial) Serial.println(F("Connection failed"));
+              ir=0;
+              } // end function GET WEATHER
+
+}
+// function PAR
+String par(String thisline, String search){ // extract search parameter from xml thisline
+byte e = search.length() + 2;
+int p = thisline.indexOf(search);
+int l = thisline.indexOf("\"", p + e);
+return thisline.substring(p + e, l);
+}
+
