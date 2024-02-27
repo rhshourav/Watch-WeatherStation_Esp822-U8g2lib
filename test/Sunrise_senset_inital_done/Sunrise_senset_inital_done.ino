@@ -7,8 +7,8 @@
 #include <Time.h> // Include TimeLib for time functions
 
 // Replace with your network credentials
-const char* ssid = "WiFi Ki Tor Bap Er";
-const char* password = "f0kirni007";
+const char* ssid = "Test";
+const char* password = "test1234";
 
 // Replace with your OpenWeatherMap API key
 const char* apiKey = "e542006c2fc74216f5ef208e45def0bd";

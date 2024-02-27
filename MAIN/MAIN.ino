@@ -33,8 +33,10 @@ int numIncr = 15;
 int Blevel ;
 int del = 20;
 int button = 4;
-
-
+const int txLed = 1;
+int ledState = 0;
+int minZero ;
+int secZero ;
 unsigned long lastCallTime = 0;    
 unsigned long previousMillis = 0;
 const long interval = 30 * 60 * 1000;           // last time you called the parseWeatherData function, in milliseconds
@@ -168,11 +170,11 @@ String statusWe(int state){
     }else if (state == 801){
       weinfo = "Few Clouds: 11-25%";
     }else if (state == 802){
-      weinfo = "Scattered Clouds: 25-50%";
+      weinfo = "Scattered Clouds: 25-50%%";
     }else if (state == 803){
-      weinfo = "Broken Clouds: 51-84%";
+      weinfo = "Broken Clouds: 51-84%%";
     }else if (state == 804){
-      weinfo = "Overcast Clouds: 85-100%";
+      weinfo = "Overcast Clouds: 85-100%%";
     }else {
       Serial.println(errorMes);
     }
@@ -250,6 +252,15 @@ void drawWeatherSymbol(u8g2_uint_t x, u8g2_uint_t y, uint8_t symbol)
   }
 }
 
+String getTimeString(int time) {
+  int hour = (time + 21600) % 86400 / 3600;  // Adjust for timezone offset (if needed)
+  int minute = (time + 21600) % 3600 / 60;
+  int hour12 = (hour + 11) % 12 + 1;  // Convert to 12-hour format
+  String period = (hour < 12) ? "AM" : "PM";  // Determine the period (AM or PM)
+  String timeString = String(hour12) + ":" + String(minute) + " " + period;
+  return timeString;
+}
+
 
 void drawWeather(uint8_t symbol, int degree)
 {
@@ -278,7 +289,7 @@ void draw(const char *s, uint8_t symbol, int degree)
       break;
   }
 }String getWeatherData() {
-    String url = "http://api.openweathermap.org/data/2.5/weather?q=Dhaka,BD&units=metric&appid=e542006c2fc74216f5ef208e45def0bd";
+    String url = "http://api.openweathermap.org/data/2.5/weather?q=Kashimpur,BD&units=metric&appid=e542006c2fc74216f5ef208e45def0bd";
     WiFiClient client; 
     HTTPClient http;
     http.begin(client, url);
@@ -310,19 +321,24 @@ void parseWeatherData(String weatherData) {
     int humidity = doc["main"]["humidity"];
     String population = doc["clouds"]["all"];
     
- float windSpeed = doc["timezone"];
+    float windSpeed = doc["timezone"];
    
     int timezone = doc[""]["timezone"];
-  const char* icon = doc["weather"][0]["icon"];
+    const char* icon = doc["weather"][0]["icon"];
 
         
     int weatherId = doc["weather"][0]["id"].as<int>();
     float weatherTemperature = doc["main"]["temp"].as<float>();
     int weatherHumidity = doc["main"]["humidity"].as<int>();
-    
+    time_t sunriseTime = doc["sys"]["sunrise"];
+    time_t sunsetTime = doc["sys"]["sunset"];
+    int maxTemp = doc["main"]["temp_max"];
+    int minTemp = doc["main"]["temp_min"];
+    String sunriseTimeString = getTimeString(sunriseTime);
+    String sunsetTimeString = getTimeString(sunsetTime);
     //Disconnect
     client.stop();
-    Serial.println(icon);
+   /* Serial.println(icon);
     Serial.println(F("Response:"));
     Serial.print("Weather: ");
     Serial.println(weatherId);
@@ -331,6 +347,12 @@ void parseWeatherData(String weatherData) {
     Serial.print("Humidity: ");
     Serial.println(weatherHumidity);
     Serial.println();
+    Serial.println(maxTemp);
+    Serial.println(minTemp);
+    Serial.println(sunriseTime);
+    Serial.println(sunsetTime);
+    Serial.println(sunriseTimeString);
+    Serial.println(sunsetTimeString);*/
     String weData = "Humidity:"+ String(weatherHumidity) +"%% " + statusWe(weatherId).c_str() ;
     char scrollText[15];
     sprintf(scrollText, weData.c_str());
@@ -347,7 +369,26 @@ void parseWeatherData(String weatherData) {
     }else if(weatherId >= 801 && weatherId <= 899){
       draw(scrollText, SUN_CLOUD, weatherTemperature);
     } 
-  } 
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_8x13_t_cyrillic);
+  String SunRise = "Sunrise- " + sunriseTimeString ;
+  u8g2.drawStr(0, 25, SunRise.c_str());
+  String SunSet = "Sunset-  " + sunsetTimeString ;
+  u8g2.drawStr(0, 37, SunSet.c_str());
+  String MAXTEMP = "Max_Temp: " + String(maxTemp) + " C";
+  u8g2.drawStr(0, 49, MAXTEMP.c_str());
+  u8g2.drawStr(97,43, ".");
+ String MNITEMP = "Mni_Temp: " + String(minTemp) + " C";
+  u8g2.drawStr(0, 63, MNITEMP.c_str());
+  u8g2.drawStr(97, 57, ".");
+  u8g2.sendBuffer();
+  delay(10000);
+    
+
+
+
+} 
+
   
 
 
@@ -379,6 +420,7 @@ String getCurrentTime() {
   } else if (h > 12) {
     h = h - 12;
   }
+  
   String timeString = (h < 10 ? "0" : "")+String(h) + ":" + (m < 10 ? "0" : "") + String(m);
   return timeString;
 }
@@ -400,6 +442,7 @@ String getCurrentWeekday() {
 String getCurrentSeconds() {
   // Get current seconds
   int s = timeClient.getSeconds();
+  secZero = 1
   return (s < 10 ? "0" : "") + String(s);
 }
 
@@ -450,7 +493,6 @@ void showTime(){
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_sisterserif_tr);
     u8g2.drawStr(16, 16,getCurrentDate().c_str() );
-    //u8g2.drawStr()
     u8g2.setFont(u8g2_font_mystery_quest_32_tr);
     u8g2.drawStr(14, 45, getCurrentTime().c_str());
     u8g2.setFont( u8g2_font_bitcasual_tf);
@@ -477,10 +519,11 @@ void autoWeUpdate(){
 void setup(){
 	Serial.begin(115200);
   pinMode(button, INPUT);
-  u8g2.enableUTF8Print(); 
+  pinMode(txLed, OUTPUT);
   pinMode(BUILTIN_LED, OUTPUT);
 	Serial.println("Initing Program");
 	u8g2.begin();
+  u8g2.enableUTF8Print(); 
   WiFi.begin(ssid, pass);
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED) 
@@ -492,6 +535,7 @@ void setup(){
   }
   Serial.println("\nWiFi connected");
   printWifiStatus();
+  digitalWrite(txLed, LOW);
   String weatherData = getWeatherData();
   u8g2.clearBuffer();
   timeClient.begin();
@@ -500,10 +544,22 @@ void setup(){
 }
 
 void loop(){
-  autoWeUpdate();
+  
   showTime();
   ledFade();
   if (digitalRead(button) == HIGH){
+    autoWeUpdate();
     parseWeatherData(savedData);
   }
+  if (timeClient.getMinutes() == 00 && ledState == 1 && timeClient.getSeconds(); == 1){
+    digitalWrite(txLed, HIGH);
+    delay(600);
+  }else{
+    digitalWrite(txLed, LOW);
+    minZero = 0;
+    secZero = 0;
+    ledState = 0;
+  }
+
+  
 }
