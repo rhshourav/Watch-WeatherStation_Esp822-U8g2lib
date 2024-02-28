@@ -12,13 +12,58 @@
 char ssid[] = "TEST";
 char pass[] = "test1234";
 
+
+/*************************************************************
+Alarm Related Variables;
+**************************************************************/
+bool alarmStateMain = false; // set this to true to turn on alarm function.
+const int alarmLedDelay = 300;
+//For Alram 1 plese set alarm1 = HIGH and set time as 24 format 
+const char* alarmName1 ="Alarm 1";
+const int alarm1 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt1 = 0; //set your Hour (24 hour format);
+const int aMt1 = 0; // set your  desired Minutes;
+const int aSt1 = 5; // set your desired on time in seconds for LED state 
+//For Alram 2 plese set alarm1 = HIGH and set time as 24 format 
+const char* alarmName2 ="Alarm 2";
+const int alarm2 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt2 = 0; //set your Hour (24 hour format);
+const int aMt2 = 0; // set your  desired Minutes;
+const int aSt2 = 5; // set your desired on time in seconds for LED state 
+//For Alram 3 plese set alarm1 = HIGH and set time as 24 formate 
+const char* alarmName3 ="Alarm 3";
+const int alarm3 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt3 = 0; //set your Hour (24 hour format);
+const int aMt3 =0; // set your  desired Minutes;
+const int aSt3 = 5; // set your desired on time in seconds for LED state 
+//For Alram 4 plese set alarm1 = HIGH and set time as 24 format 
+const char* alarmName4 ="Alarm 4";
+const int alarm4 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt4 = 0; //set your Hour (24 hour format);
+const int aMt4 =0; // set your  desired Minutes;
+const int aSt4 = 5; // set your desired on time in seconds for LED state 
+
+/**********************************************************************************
+Screen Variables
+**********************************************************************************/
 const int ScreenWidth = 64;
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C
+u8g2(U8G2_R0, 12, 14, U8X8_PIN_NONE);
+
+
+
+/*************************************************************************
+NTOP AND UDP & HTTP WIFI VARIABLES
+*************************************************************************/
 // Define NTP client
 WiFiUDP ntpUDP;
 WiFiClient client;
 NTPClient timeClient(ntpUDP, "time.google.com");  // NTP server in Bangladesh
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C
-u8g2(U8G2_R0, 12, 14, U8X8_PIN_NONE);
+
+
+/****************************************************************************
+Variables for weather
+****************************************************************************/
 unsigned long lastDisplayTime = 0;
 const unsigned long displayInterval = 1000;//300000;  // 5 minutes in milliseconds
 
@@ -27,23 +72,28 @@ const unsigned long displayInterval = 1000;//300000;  // 5 minutes in millisecon
 #define CLOUD 2
 #define RAIN 3
 #define THUNDER 4
+String weatherData ;
+String savedData;
 
+
+/**********************************************
+Global Variables
+**********************************************/
 int switchState = 0;
 int numIncr = 15;
 int Blevel ;
-int del = 20;
+int LedFadeDelay = 20;
 int button = 4;
-const int txLed = 1;
-int ledState = 0;
-int minZero ;
-int secZero ;
-unsigned long lastCallTime = 0;    
+const int txLed = 1;   
 unsigned long previousMillis = 0;
 const long interval = 30 * 60 * 1000;           // last time you called the parseWeatherData function, in milliseconds
-const unsigned long postingInterval = 5L * 1000L;  // delay between updates, in milliseconds
-String weatherData ;
-String savedData;
-String statusWe(int state){
+
+
+
+////////////////////////////////////////////////////////
+//Weather Status logic
+///////////////////////////////////////////////////////
+String weatherStatus(int state){
   String weinfo;
   String errorMes ="Did't got the right information.";
   if (state >= 200 && state <= 299){
@@ -185,6 +235,12 @@ String statusWe(int state){
 
   return weinfo;
 }
+
+
+
+////////////////////////////////////////////////////////
+//Scrolling function & ICON Draw function
+///////////////////////////////////////////////////////
 void drawScrollString(int16_t offset, const char *s)
 {
   static char buf[36];  // should for screen with up to 256 pixel width 
@@ -252,14 +308,7 @@ void drawWeatherSymbol(u8g2_uint_t x, u8g2_uint_t y, uint8_t symbol)
   }
 }
 
-String getTimeString(int time) {
-  int hour = (time + 21600) % 86400 / 3600;  // Adjust for timezone offset (if needed)
-  int minute = (time + 21600) % 3600 / 60;
-  int hour12 = (hour + 11) % 12 + 1;  // Convert to 12-hour format
-  String period = (hour < 12) ? "AM" : "PM";  // Determine the period (AM or PM)
-  String timeString = String(hour12) + ":" + String(minute) + " " + period;
-  return timeString;
-}
+
 
 
 void drawWeather(uint8_t symbol, int degree)
@@ -338,6 +387,7 @@ void parseWeatherData(String weatherData) {
     String sunsetTimeString = getTimeString(sunsetTime);
     //Disconnect
     client.stop();
+    ///FOR DEBUG
    /* Serial.println(icon);
     Serial.println(F("Response:"));
     Serial.print("Weather: ");
@@ -353,7 +403,7 @@ void parseWeatherData(String weatherData) {
     Serial.println(sunsetTime);
     Serial.println(sunriseTimeString);
     Serial.println(sunsetTimeString);*/
-    String weData = "Humidity:"+ String(weatherHumidity) +"%% " + statusWe(weatherId).c_str() ;
+    String weData = "Humidity: "+ String(weatherHumidity) +"%% " + weatherStatus(weatherId).c_str() ;
     char scrollText[15];
     sprintf(scrollText, weData.c_str());
     if (weatherId == 800){
@@ -378,7 +428,7 @@ void parseWeatherData(String weatherData) {
   String MAXTEMP = "Max_Temp: " + String(maxTemp) + " C";
   u8g2.drawStr(0, 49, MAXTEMP.c_str());
   u8g2.drawStr(97,43, ".");
- String MNITEMP = "Mni_Temp: " + String(minTemp) + " C";
+ String MNITEMP = "Min_Temp: " + String(minTemp) + " C";
   u8g2.drawStr(0, 63, MNITEMP.c_str());
   u8g2.drawStr(97, 57, ".");
   u8g2.sendBuffer();
@@ -389,9 +439,21 @@ void parseWeatherData(String weatherData) {
 
 } 
 
+void autoWeUpdate(){
+  Serial.println("Doing Update.");
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval && WiFi.status() == WL_CONNECTED) {
+    previousMillis = currentMillis;
+
+    String weatherData = getWeatherData(); 
+  }
+  Serial.println("Update Done.");
+}
   
 
-
+////////////////////////////////////////////////
+///Print Wifi Status to Serial Monitor
+////////////////////////////////////////////////
 void printWifiStatus() 
 {
   // print the SSID of the network you're attached to:
@@ -410,6 +472,19 @@ void printWifiStatus()
   Serial.println(" dBm");
 }
 
+
+
+/**********************************************************
+Time Related Funcions
+**********************************************************/
+String getTimeString(int time) {
+  int hour = (time + 21600) % 86400 / 3600;  // Adjust for timezone offset (if needed)
+  int minute = (time + 21600) % 3600 / 60;
+  int hour12 = (hour + 11) % 12 + 1;  // Convert to 12-hour format
+  String period = (hour < 12) ? "AM" : "PM";  // Determine the period (AM or PM)
+  String timeString = String(hour12) + ":" + String(minute) + " " + period;
+  return timeString;
+}
 
 String getCurrentTime() {
   // Get current time in 12-hour format
@@ -442,7 +517,6 @@ String getCurrentWeekday() {
 String getCurrentSeconds() {
   // Get current seconds
   int s = timeClient.getSeconds();
-  secZero = 1
   return (s < 10 ? "0" : "") + String(s);
 }
 
@@ -466,25 +540,7 @@ String getCurrentDate() {
 
   return String(formattedDate);
 }
-void ledFade(){
-    if (switchState == 0){
-    analogWrite(BUILTIN_LED, Blevel);
-    Blevel = Blevel+ numIncr;
-    if (Blevel == 255){
-      switchState = 1;
-    }
-    delay(del);
 
-  }
-  if (switchState == 1){
-    analogWrite(BUILTIN_LED, Blevel);
-    Blevel = Blevel - numIncr;
-    if (Blevel == 0){
-      switchState = 0;
-    }
-    delay(del);
-  }
-}
 void showTime(){
   unsigned long currentMillis = millis();
 
@@ -499,22 +555,78 @@ void showTime(){
     u8g2.drawStr(90, 27, getCurrentPeriod().c_str());
     u8g2.setFont( u8g2_font_sisterserif_tr);
     u8g2.drawStr(90, 42, getCurrentSeconds().c_str());  
-    int textPosition = ((ScreenWidth - getCurrentWeekday().length())/2);
+    int textPosition = ((ScreenWidth - strlen(getCurrentWeekday().c_str()))/2);
     u8g2.setFont( u8g2_font_sisterserif_tr);
     u8g2.drawStr(textPosition, 60, getCurrentWeekday().c_str());
     u8g2.sendBuffer();
   }
 }
 
-void autoWeUpdate(){
-  Serial.println("Doing Update.");
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval && WiFi.status() == WL_CONNECTED) {
-    previousMillis = currentMillis;
 
-    String weatherData = getWeatherData(); 
+void alarm(){
+  int h =timeClient.getHours();
+  int m = timeClient.getMinutes();
+  int s = timeClient.getSeconds();
+   if (h == aHt1 && m == aMt1 && s <= aSt1 && alarm1 == HIGH){
+    u8g2.clearBuffer();
+    u8g2.setFont( u8g2_font_sisterserif_tr);
+    u8g2.drawStr(20, 35,alarmName1);
+    u8g2.sendBuffer();
+    ledLoop(aSt1);
+  }else if (h == aHt2 && m == aMt2 && s <= aSt2 && alarm2 == HIGH){
+    u8g2.clearBuffer();
+    u8g2.setFont( u8g2_font_sisterserif_tr);
+    u8g2.drawStr(20, 35, alarmName2);
+    u8g2.sendBuffer();
+    ledLoop(aSt2);
+  }else if (h == aHt3 && m == aMt3 && s <= aSt3 && alarm3 == HIGH){
+    u8g2.clearBuffer();
+    u8g2.setFont( u8g2_font_sisterserif_tr);
+    u8g2.drawStr(20, 35, alarmName3);
+    u8g2.sendBuffer();
+    ledLoop(aSt3);
+    }else if (h == aHt4 && m == aMt4 && s <= aSt4 && alarm4 == HIGH){
+    u8g2.clearBuffer();
+    u8g2.setFont( u8g2_font_sisterserif_tr);
+    u8g2.drawStr(20, 35, alarmName4);
+    u8g2.sendBuffer();
+    ledLoop(aSt4);
+    }else{
+    digitalWrite(txLed, LOW);
+    delay(alarmLedDelay);
   }
-  Serial.println("Update Done.");
+  
+}
+/*******************************************
+Function for led
+*******************************************/
+void ledLoop(int num){
+  while(timeClient.getSeconds() <= num){
+      digitalWrite(txLed, HIGH);
+      delay(alarmLedDelay);
+      digitalWrite(txLed, LOW);
+      delay(alarmLedDelay);
+      
+    }
+}
+void ledFade(){
+    if (switchState == 0){
+    analogWrite(BUILTIN_LED, Blevel);
+    Blevel = Blevel+ numIncr;
+    if (Blevel == 255){
+      switchState = 1;
+    }
+    delay(LedFadeDelay);
+
+  }
+  if (switchState == 1){
+    analogWrite(BUILTIN_LED, Blevel);
+    Blevel = Blevel - numIncr;
+    if (Blevel == 0){
+      switchState = 0;
+    }
+    delay(LedFadeDelay);
+  }
 }
 void setup(){
 	Serial.begin(115200);
@@ -546,20 +658,19 @@ void setup(){
 void loop(){
   
   showTime();
+ 
   ledFade();
   if (digitalRead(button) == HIGH){
     autoWeUpdate();
     parseWeatherData(savedData);
   }
-  if (timeClient.getMinutes() == 00 && ledState == 1 && timeClient.getSeconds(); == 1){
+  if (timeClient.getMinutes() == 0 && timeClient.getSeconds() <= 10){
     digitalWrite(txLed, HIGH);
     delay(600);
   }else{
     digitalWrite(txLed, LOW);
-    minZero = 0;
-    secZero = 0;
-    ledState = 0;
   }
-
-  
+  if (alarmStateMain == true){
+    alarm();
+  }
 }
