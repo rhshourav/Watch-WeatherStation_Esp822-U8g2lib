@@ -82,7 +82,7 @@ Global Variables
 int switchState = 0;
 int numIncr = 15;
 int Blevel ;
-int LedFadeDelay = 20;
+int LedFadeDelay = 10;
 int button = 4;
 const int txLed = 1;   
 unsigned long previousMillis = 0;
@@ -383,6 +383,7 @@ void parseWeatherData(String weatherData) {
     time_t sunsetTime = doc["sys"]["sunset"];
     int maxTemp = doc["main"]["temp_max"];
     int minTemp = doc["main"]["temp_min"];
+    const char* location = doc["name"];
     String sunriseTimeString = getTimeString(sunriseTime);
     String sunsetTimeString = getTimeString(sunsetTime);
     //Disconnect
@@ -403,7 +404,7 @@ void parseWeatherData(String weatherData) {
     Serial.println(sunsetTime);
     Serial.println(sunriseTimeString);
     Serial.println(sunsetTimeString);*/
-    String weData = "Humidity: "+ String(weatherHumidity) +"%% " + weatherStatus(weatherId).c_str() ;
+    String weData = "RH: "+ String(weatherHumidity) +"%% " + weatherStatus(weatherId).c_str() ;
     char scrollText[15];
     sprintf(scrollText, weData.c_str());
     if (weatherId == 800){
@@ -421,6 +422,8 @@ void parseWeatherData(String weatherData) {
     } 
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_8x13_t_cyrillic);
+  String lol = "Loc: "+ String(location);
+  u8g2.drawStr(0, 10, lol.c_str());
   String SunRise = "Sunrise- " + sunriseTimeString ;
   u8g2.drawStr(0, 25, SunRise.c_str());
   String SunSet = "Sunset-  " + sunsetTimeString ;
@@ -616,7 +619,7 @@ void ledFade(){
     if (Blevel == 255){
       switchState = 1;
     }
-    delay(LedFadeDelay);
+    //delay(LedFadeDelay);
 
   }
   if (switchState == 1){
@@ -625,7 +628,7 @@ void ledFade(){
     if (Blevel == 0){
       switchState = 0;
     }
-    delay(LedFadeDelay);
+    //delay(LedFadeDelay);
   }
 }
 void setup(){
@@ -664,9 +667,9 @@ void loop(){
     autoWeUpdate();
     parseWeatherData(savedData);
   }
-  if (timeClient.getMinutes() == 0 && timeClient.getSeconds() <= 10){
+  if (timeClient.getMinutes() == 0 && timeClient.getSeconds() <= 6){
     digitalWrite(txLed, HIGH);
-    delay(600);
+    delay(400);
   }else{
     digitalWrite(txLed, LOW);
   }
