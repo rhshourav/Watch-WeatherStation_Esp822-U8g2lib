@@ -485,7 +485,7 @@ String getTimeString(int time) {
   int minute = (time + 21600) % 3600 / 60;
   int hour12 = (hour + 11) % 12 + 1;  // Convert to 12-hour format
   String period = (hour < 12) ? "AM" : "PM";  // Determine the period (AM or PM)
-  String timeString = String(hour12) + ":" + String(minute) + " " + period;
+  String timeString = String(hour12) + ":" + (minute < 10 ? "0" : "")+String(minute) + " " + period;
   return timeString;
 }
 
