@@ -16,6 +16,7 @@ char pass[] = "test1234";
 /*************************************************************
 Alarm Related Variables;
 **************************************************************/
+/*
 bool alarmStateMain = false; // set this to true to turn on alarm function.
 const int alarmLedDelay = 300;
 //For Alram 1 plese set alarm1 = HIGH and set time as 24 format 
@@ -41,7 +42,7 @@ const char* alarmName4 ="Alarm 4";
 const int alarm4 = LOW; // LOW = OFf and HIGH = ON.
 const int aHt4 = 0; //set your Hour (24 hour format);
 const int aMt4 =0; // set your  desired Minutes;
-const int aSt4 = 5; // set your desired on time in seconds for LED state 
+const int aSt4 = 5; // set your desired on time in seconds for LED state */
 
 /**********************************************************************************
 Screen Variables
