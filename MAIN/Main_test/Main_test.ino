@@ -13,6 +13,8 @@ char ssid[] = "TEST";
 char pass[] = "test1234";
 
 
+
+
 /*************************************************************
 Alarm Related Variables;
 **************************************************************/
@@ -632,6 +634,33 @@ void ledFade(){
     //delay(LedFadeDelay);
   }
 }
+/************************************************************
+Joy Stick Variables
+*************************************************************/
+const int selectBtn = 5;
+const int upBtn = 4;
+const int downBtn = 13;
+const int leftBtn = 15;
+const int rightBtn = 3;
+
+bool menuStatus = false;
+const int menuItem = 3;
+const int sideVar = 3 ;
+const int maxHvalue = 24;
+const int maxMvalue = 59;
+const int maxSvalue = 59;
+
+
+void Menu(bool status){
+  Serial.println("1: Weather");
+  Serial.println("2: Timer");
+  Serial.println("3: Stop Watch");
+  int varMenu ;
+  while(status){
+    
+  }
+}
+
 void setup(){
 	Serial.begin(115200);
   pinMode(button, INPUT);
@@ -664,9 +693,16 @@ void loop(){
   showTime();
  
   ledFade();
+  /*
   if (digitalRead(button) == HIGH){
     autoWeUpdate();
     parseWeatherData(savedData);
+  }*/
+
+  if (digialRead(selectBtn) == HIGH){
+    menuStatus = !menuStatus;
+    Menu(true);
+    Serial.println("Menu Selected")
   }
   if (timeClient.getMinutes() == 0 && timeClient.getSeconds() <= 6){
     digitalWrite(txLed, HIGH);
@@ -677,4 +713,3 @@ void loop(){
   if (alarmStateMain == true){
     alarm();
   }
-}
