@@ -1,5 +1,5 @@
 //#include <Arduino.h>
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <Wire.h>
 #include <U8g2lib.h>
 #include <NTPClient.h>
@@ -10,19 +10,19 @@
 #include <ESP8266HTTPClient.h>
 // WiFi credentials
 char ssid[] = "TEST";
-char pass[] = "test1234";
+char pass[] = "TEST1234";
 
 
 /*************************************************************
 Alarm Related Variables;
 **************************************************************/
-bool alarmStateMain = false; // set this to true to turn on alarm function.
+bool alarmStateMain = true; // set this to true to turn on alarm function.
 const int alarmLedDelay = 300;
 //For Alram 1 plese set alarm1 = HIGH and set time as 24 format 
-const char* alarmName1 ="Alarm 1";
-const int alarm1 = LOW; // LOW = OFf and HIGH = ON.
-const int aHt1 = 0; //set your Hour (24 hour format);
-const int aMt1 = 0; // set your  desired Minutes;
+const char* alarmName1 ="SLEEP";
+const int alarm1 = HIGH; // LOW = OFf and HIGH = ON.
+const int aHt1 = 13; //set your Hour (24 hour format);
+const int aMt1 = 30; // set your  desired Minutes;
 const int aSt1 = 5; // set your desired on time in seconds for LED state 
 //For Alram 2 plese set alarm1 = HIGH and set time as 24 format 
 const char* alarmName2 ="Alarm 2";
@@ -82,9 +82,8 @@ Global Variables
 int switchState = 0;
 int numIncr = 15;
 int Blevel ;
-int LedFadeDelay = 10;
-int button = 4;
-const int txLed = 1;   
+int LedFadeDelay = 5;
+const int txLed = 1;//1;   
 unsigned long previousMillis = 0;
 const long interval = 30 * 60 * 1000;           // last time you called the parseWeatherData function, in milliseconds
 
@@ -238,6 +237,512 @@ String weatherStatus(int state){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const int selectBtn = 5;
+const int upBtn = 16;
+const int downBtn = 13;
+const int leftBtn = 15;
+const int rightBtn = 4;
+const int delayMenu = 400;
+const int exitBtn = 0;
+bool exitTimer = false;
+
+
+
+
+
+void alart(int numOfSec, int numOfDelay){
+  int i = 0;
+  while(i <= numOfSec){
+    static unsigned long lastTime = 0; 
+    unsigned long currentTime = millis();
+
+    if (currentTime - lastTime >= 1000) {
+        lastTime = currentTime;  
+        i++;
+    }
+      digitalWrite(txLed, HIGH);
+      delay(numOfDelay);
+      digitalWrite(txLed, LOW);
+      delay(numOfDelay);
+      
+    }
+}
+
+
+
+void resetFunction(){
+  
+const int selectBtn = 5;
+const int upBtn = 12;
+const int downBtn = 13;
+const int leftBtn = 15;
+const int rightBtn = 4;
+const int delayMenu = 400;
+const int exitBtn = 0;
+bool exitTimer = false;
+}
+
+void oneLiner(int x, int y, String name){
+  delay(30);
+   u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_sisterserif_tr);
+    u8g2.drawStr(x, y, name.c_str());
+    u8g2.sendBuffer();
+    delay(30);
+}
+
+void showTT(int h, int m, int s, String Name){
+    String time = (h < 10 ? "0" : "")+String(h)+ ":" + (m < 10 ? "0" : "")+String(m);
+    String sec = String(s < 10 ? "0" : "")+ String(s);
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_sisterserif_tr);
+    u8g2.drawStr(16, 16,Name.c_str() );
+    u8g2.setFont(u8g2_font_mystery_quest_32_tr);
+    u8g2.drawStr(14, 45, time.c_str());
+    u8g2.setFont( u8g2_font_sisterserif_tr);
+    u8g2.drawStr(90, 42, sec.c_str());  
+    u8g2.sendBuffer();
+}
+void weather(){
+  u8g2.clearBuffer();
+  u8g2.sendBuffer();
+  autoWeUpdate();
+  parseWeatherData(savedData);
+  resetFunction();
+}
+void countTimer(int hh, int mm, int ss){
+  resetFunction();
+  bool State = true;
+  while(State){
+    Serial.println("HH: " + String(hh) + " MM: " + String(mm) + " SS: " + String(ss));
+  static unsigned long lastTime = 0; 
+    unsigned long currentTime = millis();
+    if(hh == 0 && mm == 0 && ss == 0){
+
+      alart(6, 300);
+      //Serial.println("Tmer finished...");
+      //Serial.println("HH: " + String(hh) + " MM: " + String(mm) + " SS: " + String(ss));
+      State = false;
+    }
+    if (ss == 0 && mm != 0){
+      ss = 59;
+      mm--;
+    }
+    if (ss == 0 && mm == 0 && hh != 0){
+      ss = 59;
+      mm = 59;
+      hh--;
+    }
+    
+    if (currentTime - lastTime >= 1000) {
+        lastTime = currentTime;  
+        showTT(hh, mm, ss, "Timer Count.");
+        ss--;
+    }
+    if (digitalRead(exitBtn) == LOW){
+      State = false;
+      exitTimer = true;
+    }
+    
+    
+    
+    delay(17);
+    }
+    
+}
+void timer(bool Status){
+  resetFunction();
+  bool loop = true;
+  int setHMS = 1;
+  int timerHH = 0;
+  int timerMM = 0;
+  int timerSS = 0;
+  if (setHMS == 1 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, "Hour: 00");
+      u8g2.sendBuffer();
+      }
+  delay(400);
+
+  while(Status){
+    Serial.println("HH: " + String(timerHH) + " MM: " + String(timerMM) + " SS: " + String(timerSS));
+    if( digitalRead(rightBtn) == HIGH){
+      setHMS++;
+      delay(delayMenu);
+      if (setHMS == 1 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, "Hour: 00");
+      u8g2.sendBuffer();
+      }else if (setHMS == 2 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, "Minute: 00");
+      u8g2.sendBuffer();
+      }else if (setHMS == 3 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, "Second: 00");
+      u8g2.sendBuffer();
+      }else{
+        Serial.print("HSM ERROR..");
+      }
+    }
+    if(digitalRead(leftBtn) == HIGH){
+      setHMS--;
+      delay(delayMenu);
+      if (setHMS == 1 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, "Hour: 00");
+      u8g2.sendBuffer();
+      }else if (setHMS == 2 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "Minute:");
+      u8g2.drawStr(16, 36, ": 00");
+      u8g2.sendBuffer();
+      }else if (setHMS == 3 ){
+        u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, "Second: 00");
+      u8g2.sendBuffer();
+      }else{
+        Serial.print("HSM ERROR..");
+      }
+    }
+    if(setHMS == 0 ){
+      setHMS = 3;
+    }
+    if(setHMS > 3){
+      setHMS = 1;
+    }
+    if (setHMS == 1 && digitalRead(upBtn) == HIGH){
+      timerHH++;
+      String time = "Hour: " + String(timerHH < 10 ? "0" : "") + String(timerHH);
+
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, time.c_str());
+      u8g2.sendBuffer();
+
+
+     // Serial.print("HH: ");
+     // Serial.println(timerHH);
+      delay(100);
+    }
+    if (setHMS == 1 && digitalRead(downBtn) == HIGH){
+      timerHH--;
+      if (timerHH < 0){
+        timerHH = 0;
+      }
+      String time = "Hour: " +String(timerHH < 10 ? "0" : "") + String(timerHH);
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, time.c_str());
+      u8g2.sendBuffer();
+      //Serial.print("HH: ");
+      //Serial.println(timerHH);
+      delay(100);
+    }
+    if (setHMS == 2 && digitalRead(upBtn) == HIGH){
+      timerMM++;
+      if (timerMM > 59){
+        timerMM = 0;
+      }
+      String time = "Minute: " +String(timerMM< 10 ? "0" : "")+ String(timerMM);
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, time.c_str());
+      u8g2.sendBuffer();
+      //Serial.print("MM: ");
+      //Serial.println(timerMM);
+      delay(100);
+    }
+    if (setHMS == 2 && digitalRead(downBtn) == HIGH){
+      timerMM--;
+      if (timerMM < 0){
+        timerMM = 0;
+      }
+      String time = "Minute: " +String(timerMM< 10 ? "0" : "")+String(timerMM);
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, time.c_str());
+      u8g2.sendBuffer();
+      delay(100);
+      //Serial.print("MM: ");
+      //Serial.println(timerMM);
+      //delay(100);
+    }
+    if (setHMS == 3 && digitalRead(upBtn) == HIGH){
+      timerSS++;
+      if (timerSS > 59){
+        timerSS = 0;
+      }
+      String time = "Second: " +String(timerSS< 10 ? "0" : "")+String(timerSS);
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, time.c_str());
+      u8g2.sendBuffer();
+
+
+      //delay(100);
+      //Serial.print("SS: ");
+     // Serial.println(timerSS);
+      delay(100);
+    }
+    if (setHMS == 3 && digitalRead(downBtn) == HIGH){
+      timerSS--;
+      if (timerSS < 0){
+        timerSS = 0;
+      }
+      String time = "Second: " +String(timerSS< 10 ? "0" : "")+String(timerSS);
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_sisterserif_tr);
+      u8g2.drawStr(16, 16, "SET:");
+      u8g2.drawStr(16, 36, time.c_str());
+      u8g2.sendBuffer();
+     // Serial.print("SS: ");
+      //Serial.println(timerSS);
+      delay(100);
+    }
+    
+    if (digitalRead(selectBtn) == HIGH){
+      
+      //Serial.println("HH: " + String(timerHH) + " MM: " + String(timerMM) + " SS: " + String(timerSS));
+      Status = false;
+      countTimer(timerHH, timerMM, timerSS);
+    }
+    if (digitalRead(exitBtn) == LOW){
+      Status = false;
+    }
+    if (exitTimer == true){
+      Status = false;
+      exitTimer = false;
+    }
+
+    delay(17);
+  }
+
+
+}
+
+void stopWatch(bool State){
+  resetFunction();
+  bool bol1 = false;
+  bool bol2 = true ;
+  ;
+  while(State){///REMEMBER TO CHANGE THIS
+    int h = 0 ;
+    int m = 0 ;
+    int s = 0 ;
+    bool erdBool = true;
+    bool ndBool = true;
+    
+    while(State && bol1 == true ){
+      
+      static unsigned long lastTime = 0; 
+      unsigned long currentTime = millis();
+
+    
+      if (currentTime - lastTime >= 1000) {
+          lastTime = currentTime; 
+          if (s>= 59 ){
+            m++;
+            s = 0;
+          }
+          if (m >= 59){
+            h++;
+            m = 0;
+          }
+
+          showTT(h, m, s, "Stop Watch");
+          //Serial.println("HH: "+ String(h) + " mm: " + String(m) + " ss: " +String(s) );
+
+          s++;
+        
+        }
+        delay(100);
+       if (digitalRead(selectBtn) == HIGH){
+        State = false;
+        }
+        if (digitalRead(exitBtn) == LOW){
+        ndBool  = false;
+        State = false;
+        erdBool = false;
+    }
+      }
+
+
+    delay(500);
+    
+    if( bol2 == false){
+   //Serial.println("Result..");
+    showTT(h, m, s, "Result");
+    alart(6, 300);
+    //Serial.println("HH: "+ String(h) + " mm: " + String(m) + " ss: " +String(s) );
+    }else{
+      oneLiner(16, 36, "Press X");
+      
+      Serial.println("Prese X to Start...");
+    }
+
+    while(ndBool && bol2 == false){
+      delay(20);
+      if (digitalRead(selectBtn) == HIGH){
+        ndBool = false;
+        State = true;
+        int h = 0 ;
+        int m = 0 ;
+        int s = 0 ;
+       // Serial.println(" Reset Done..");
+        oneLiner(16, 36, "Reset Done.");
+        delay(500);
+        //Serial.println("HH: "+ String(h) + " mm: " + String(m) + " ss: " +String(s) );
+       // Serial.println("Prese X to Start...");
+        oneLiner(16,36, "Prese 'X'");
+        delay(delayMenu);
+      }
+      if (digitalRead(exitBtn) == LOW){
+      ndBool  = false;
+      State = false;
+      erdBool = false;
+    }
+      
+    }
+
+    
+    delay(500);
+    while(erdBool){
+      delay(20);
+      if (digitalRead(selectBtn) == HIGH){
+        State = true;
+        bol1 = true;
+        bol2 = false;
+        erdBool = false;
+        delay(delayMenu);
+      }
+      if (digitalRead(exitBtn) == LOW){
+      ndBool  = false;
+      State = false;
+      erdBool = false;
+    }
+
+    }
+
+
+  }
+}
+void handleReq(int reqNum){
+  resetFunction();
+  if (reqNum == 1){
+    weather();
+  }else if (reqNum == 2 ){
+    timer(true);
+  }else if (reqNum == 3){
+    stopWatch(true);
+  }else{
+    Serial.print("Someting went Wrong.");
+    
+  }
+}
+void  menu(bool menuStatus){
+  resetFunction();
+
+  int i = 1;
+  delay(100);
+  while(menuStatus){
+    
+    if ( i == 1){
+      Serial.println("1. Weather.");
+      oneLiner(16, 36, "1. Weather");
+      
+    }
+    if (i == 2){
+      Serial.println("2. Timer.");
+      oneLiner(16, 36, "2. Timer.");
+    }
+    if (i == 3){
+      oneLiner(10, 36, "3. Stop Watch.");
+    }
+    if (digitalRead(upBtn) == HIGH){
+      i--;
+      delay(delayMenu);
+    }else if( digitalRead(downBtn) == HIGH){
+      i++;
+      delay(delayMenu);
+    }
+    if (i == 0 ){
+      i = 3;
+    }
+    if ( i > 3){
+      i = 1;
+    }
+    if (digitalRead(selectBtn) == HIGH){
+      menuStatus = false;
+      Serial.println(i);
+      handleReq(i);
+    }
+    if (digitalRead(exitBtn) == LOW){
+      menuStatus = false;
+    }
+  }
+  delay(200);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ////////////////////////////////////////////////////////
 //Scrolling function & ICON Draw function
 ///////////////////////////////////////////////////////
@@ -338,7 +843,7 @@ void draw(const char *s, uint8_t symbol, int degree)
       break;
   }
 }String getWeatherData() {
-    String url = "http://api.openweathermap.org/data/2.5/weather?q=Kashimpur,BD&units=metric&appid=e542006c2fc74216f5ef208e45def0bd";
+    String url = "http://api.openweathermap.org/data/2.5/weather?q=Kashimpur,BD&units=metric&appid=68789b9cbdc713af5c9f69bcc979c161";
     WiFiClient client; 
     HTTPClient http;
     http.begin(client, url);
@@ -422,7 +927,7 @@ void parseWeatherData(String weatherData) {
     } 
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_8x13_t_cyrillic);
-  String lol = "Loc: "+ String(location);
+  String lol = "LOC: "+ String(location);
   u8g2.drawStr(0, 10, lol.c_str());
   String SunRise = "Sunrise- " + sunriseTimeString ;
   u8g2.drawStr(0, 25, SunRise.c_str());
@@ -616,10 +1121,10 @@ void ledFade(){
     if (switchState == 0){
     analogWrite(BUILTIN_LED, Blevel);
     Blevel = Blevel+ numIncr;
-    if (Blevel == 255){
+    if (Blevel == 240){
       switchState = 1;
     }
-    //delay(LedFadeDelay);
+    delay(LedFadeDelay);
 
   }
   if (switchState == 1){
@@ -628,12 +1133,11 @@ void ledFade(){
     if (Blevel == 0){
       switchState = 0;
     }
-    //delay(LedFadeDelay);
+    delay(LedFadeDelay);
   }
 }
 void setup(){
 	Serial.begin(115200);
-  pinMode(button, INPUT);
   pinMode(txLed, OUTPUT);
   pinMode(BUILTIN_LED, OUTPUT);
 	Serial.println("Initing Program");
@@ -641,6 +1145,7 @@ void setup(){
   u8g2.enableUTF8Print(); 
   WiFi.begin(ssid, pass);
   int counter = 0;
+  
   while (WiFi.status() != WL_CONNECTED) 
   {
     delay(200);    
@@ -656,22 +1161,35 @@ void setup(){
   timeClient.begin();
   timeClient.setTimeOffset(21600);   // GMT+6:00 for Bangladesh Standard Time
   timeClient.update();
+  pinMode(selectBtn, INPUT);
+  pinMode(upBtn, INPUT);
+  pinMode(downBtn, INPUT);
+  pinMode(leftBtn, INPUT);
+  pinMode(rightBtn, INPUT);
+  pinMode(exitBtn, INPUT);
 }
 
 void loop(){
   
-  showTime();
+
+  if(digitalRead(selectBtn) == HIGH){
+    u8g2.clearBuffer();
+    u8g2.sendBuffer();
+    menu(true);
+  }
+    showTime();
  
   ledFade();
-  if (digitalRead(button) == HIGH){
-    autoWeUpdate();
-    parseWeatherData(savedData);
-  }
-  if (timeClient.getMinutes() == 0 && timeClient.getSeconds() <= 6){
+  if (timeClient.getMinutes() == 0 && timeClient.getSeconds() <= 4){
     digitalWrite(txLed, HIGH);
     delay(400);
   }else{
     digitalWrite(txLed, LOW);
+  }
+  if(digitalRead(selectBtn) == HIGH){
+    u8g2.clearBuffer();
+    u8g2.sendBuffer();
+    menu(true);
   }
   if (alarmStateMain == true){
     alarm();

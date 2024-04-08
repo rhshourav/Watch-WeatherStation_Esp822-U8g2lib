@@ -2,17 +2,30 @@
 
 
 const int selectBtn = 5;
-const int upBtn = 4;
+const int upBtn = 12;
 const int downBtn = 13;
 const int leftBtn = 15;
-const int rightBtn = 12;
+const int rightBtn = 4;
 const int delayMenu = 400;
-
-
+const int exitBtn = 0;
+bool exitTimer = false;
+void resetFunction(){
+  
+const int selectBtn = 5;
+const int upBtn = 12;
+const int downBtn = 13;
+const int leftBtn = 15;
+const int rightBtn = 4;
+const int delayMenu = 400;
+const int exitBtn = 0;
+bool exitTimer = false;
+}
 void weather(){
   Serial.println("==================Showing Weather=============================");
+  resetFunction();
 }
 void countTimer(int hh, int mm, int ss){
+  resetFunction();
   bool State = true;
   while(State){
     Serial.println("HH: " + String(hh) + " MM: " + String(mm) + " SS: " + String(ss));
@@ -37,6 +50,10 @@ void countTimer(int hh, int mm, int ss){
         lastTime = currentTime;  
         ss--;
     }
+    if (digitalRead(exitBtn) == LOW){
+      State = false;
+      exitTimer = true;
+    }
     
     
     
@@ -45,6 +62,7 @@ void countTimer(int hh, int mm, int ss){
     
 }
 void timer(bool Status){
+  resetFunction();
   bool loop = true;
   int setHMS = 1;
   int timerHH = 0;
@@ -129,6 +147,13 @@ void timer(bool Status){
       Status = false;
       countTimer(timerHH, timerMM, timerSS);
     }
+    if (digitalRead(exitBtn) == LOW){
+      Status = false;
+    }
+    if (exitTimer == true){
+      Status = false;
+      exitTimer = false;
+    }
 
     delay(17);
   }
@@ -137,12 +162,16 @@ void timer(bool Status){
 }
 
 void stopWatch(bool State){
+  resetFunction();
   bool bol1 = false;
   bool bol2 = true ;
-  while(true){///REMEMBER TO CHANGE THIS
+  ;
+  while(State){///REMEMBER TO CHANGE THIS
     int h = 0 ;
     int m = 0 ;
     int s = 0 ;
+    bool erdBool = true;
+    bool ndBool = true;
     
     while(State && bol1 == true ){
       
@@ -171,11 +200,16 @@ void stopWatch(bool State){
        if (digitalRead(selectBtn) == HIGH){
         State = false;
         }
+        if (digitalRead(exitBtn) == LOW){
+        ndBool  = false;
+        State = false;
+        erdBool = false;
+    }
       }
 
 
     delay(500);
-    bool ndBool = true;
+    
     if( bol2 == false){
     Serial.println("Result..");
     Serial.println("HH: "+ String(h) + " mm: " + String(m) + " ss: " +String(s) );
@@ -196,10 +230,15 @@ void stopWatch(bool State){
         Serial.println("Prese X to Start...");
         delay(delayMenu);
       }
+      if (digitalRead(exitBtn) == LOW){
+      ndBool  = false;
+      State = false;
+      erdBool = false;
+    }
       
     }
 
-    bool erdBool = true;
+    
     delay(500);
     while(erdBool){
       delay(20);
@@ -210,6 +249,11 @@ void stopWatch(bool State){
         erdBool = false;
         delay(delayMenu);
       }
+      if (digitalRead(exitBtn) == LOW){
+      ndBool  = false;
+      State = false;
+      erdBool = false;
+    }
 
     }
 
@@ -217,6 +261,7 @@ void stopWatch(bool State){
   }
 }
 void handleReq(int reqNum){
+  resetFunction();
   if (reqNum == 1){
     weather();
   }else if (reqNum == 2 ){
@@ -229,6 +274,7 @@ void handleReq(int reqNum){
   }
 }
 void  menu(bool menuStatus){
+  resetFunction();
 
   int i = 1;
   delay(400);
@@ -261,6 +307,9 @@ void  menu(bool menuStatus){
       Serial.println(i);
       handleReq(i);
     }
+    if (digitalRead(exitBtn) == LOW){
+      menuStatus = false;
+    }
   }
   delay(400);
 }
@@ -273,36 +322,17 @@ void setup() {
   pinMode(downBtn, INPUT);
   pinMode(leftBtn, INPUT);
   pinMode(rightBtn, INPUT);
+  pinMode(exitBtn, INPUT);
   Serial.println("Initing Program");
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
   if(digitalRead(selectBtn) == HIGH){
-    //Serial.println("Select Presed");
-    //delay(400);
     menu(true);
     
 
   }
-  if(digitalRead(upBtn) == HIGH){
-    Serial.println("UP Prassed");
-   delay(400);
-  }
-  if(digitalRead(downBtn) == HIGH){
-    Serial.println("Down Prassed");
-    delay(400);
-  
-  }
-  if(digitalRead(leftBtn) == HIGH){
-    Serial.println("Left ");
-    delay(400);
-
-  }
-  if (digitalRead(rightBtn) == HIGH){
-    Serial.println("RIGHT");
-    delay(400);
-  }
-
 }

@@ -1,5 +1,5 @@
 //#include <Arduino.h>
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <Wire.h>
 #include <U8g2lib.h>
 #include <NTPClient.h>
@@ -10,7 +10,7 @@
 #include <ESP8266HTTPClient.h>
 // WiFi credentials
 char ssid[] = "TEST";
-char pass[] = "test1234";
+char pass[] = "TEST1234";
 
 
 
