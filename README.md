@@ -76,11 +76,43 @@ In the MAIN.ino file, update the WiFi credentials:
 char ssid[] = "YOUR_SSID";
 char pass[] = "YOUR_PASSWORD";
 ```
-Add your API:
+Add your API & Location:
 ```cpp
 String getWeatherData() {
 String url = "http://api.openweathermap.org/data/2.5/weather?q=***YOUR LOCATION***&units=metric&appid=**********YOUR*API****";
 }
+```
+Heare you can hardcode your alarms:
+```cpp
+/*************************************************************
+Alarm Related Variables;
+**************************************************************/
+bool alarmStateMain = true; // set this to true to turn on alarm function.
+const int alarmLedDelay = 300;
+//For Alram 1 plese set alarm1 = HIGH and set time as 24 format 
+const char* alarmName1 ="SLEEP";
+const int alarm1 = HIGH; // LOW = OFf and HIGH = ON.
+const int aHt1 = 13; //set your Hour (24 hour format);
+const int aMt1 = 30; // set your  desired Minutes;
+const int aSt1 = 5; // set your desired on time in seconds for LED state 
+//For Alram 2 plese set alarm1 = HIGH and set time as 24 format 
+const char* alarmName2 ="Alarm 2";
+const int alarm2 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt2 = 0; //set your Hour (24 hour format);
+const int aMt2 = 0; // set your  desired Minutes;
+const int aSt2 = 5; // set your desired on time in seconds for LED state 
+//For Alram 3 plese set alarm1 = HIGH and set time as 24 formate 
+const char* alarmName3 ="Alarm 3";
+const int alarm3 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt3 = 0; //set your Hour (24 hour format);
+const int aMt3 =0; // set your  desired Minutes;
+const int aSt3 = 5; // set your desired on time in seconds for LED state 
+//For Alram 4 plese set alarm1 = HIGH and set time as 24 format 
+const char* alarmName4 ="Alarm 4";
+const int alarm4 = LOW; // LOW = OFf and HIGH = ON.
+const int aHt4 = 0; //set your Hour (24 hour format);
+const int aMt4 =0; // set your  desired Minutes;
+const int aSt4 = 5; // set your desired on time in seconds for LED state 
 ```
 ### Upload the Code
 - Select the correct board and port:
