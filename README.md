@@ -82,7 +82,7 @@ String getWeatherData() {
 String url = "http://api.openweathermap.org/data/2.5/weather?q=***YOUR LOCATION***&units=metric&appid=**********YOUR*API****";
 }
 ```
-Heare you can hardcode your alarms:
+Hear you can hardcode your alarms:
 ```cpp
 /*************************************************************
 Alarm Related Variables;
