@@ -1121,7 +1121,7 @@ void ledFade(){
     if (switchState == 0){
     analogWrite(BUILTIN_LED, Blevel);
     Blevel = Blevel+ numIncr;
-    if (Blevel == 240){
+    if (Blevel > 255){
       switchState = 1;
     }
     delay(LedFadeDelay);
@@ -1130,7 +1130,7 @@ void ledFade(){
   if (switchState == 1){
     analogWrite(BUILTIN_LED, Blevel);
     Blevel = Blevel - numIncr;
-    if (Blevel == 0){
+    if (Blevel < 0){
       switchState = 0;
     }
     delay(LedFadeDelay);
