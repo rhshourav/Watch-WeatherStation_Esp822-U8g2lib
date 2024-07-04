@@ -26,7 +26,7 @@ It fetches the current weather data from an online API and displays it on the OL
 - Step 1: Install Arduino IDE
 Download and install the Arduino IDE from the official Arduino website.
 - Step 2: Install ESP8266 Board Package
-    - Open Arduino IDE. <img src="D:\MY FILES\Shourav Files\gitrepos\Watch-WeatherStation_Esp822-U8g2lib\Img\img_2.png">
+    - Open Arduino IDE. <img src="https://github.com/rhshourav/Watch-WeatherStation_Esp822-U8g2lib/blob/main/Img/img_2.png">
     - Go to File > Preferences.
     - In the Additional Board Manager URLs field, add the following URL: ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```
     - Go to Tools > Board > Boards Manager.
