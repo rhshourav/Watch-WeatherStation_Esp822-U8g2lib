@@ -4,7 +4,7 @@
 ## Overview
 This project is a weather station and alarm clock built using an ESP8266 microcontroller and an OLED display. 
 It fetches the current weather data from an online API and displays it on the OLED screen. It also includes an alarm function and various timers.
-
+<img src="https://github.com/rhshourav/Watch-WeatherStation_Esp822-U8g2lib/blob/main/Img/img_1.png">
 ## Hardware Requirements
 - Used Hardware:
   - ESP8266 Board (e.g., NodeMCU)
@@ -26,7 +26,7 @@ It fetches the current weather data from an online API and displays it on the OL
 - Step 1: Install Arduino IDE
 Download and install the Arduino IDE from the official Arduino website.
 - Step 2: Install ESP8266 Board Package
-    - Open Arduino IDE.
+    - Open Arduino IDE. <img src="D:\MY FILES\Shourav Files\gitrepos\Watch-WeatherStation_Esp822-U8g2lib\Img\img_2.png">
     - Go to File > Preferences.
     - In the Additional Board Manager URLs field, add the following URL: ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```
     - Go to Tools > Board > Boards Manager.
