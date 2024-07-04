@@ -843,7 +843,7 @@ void draw(const char *s, uint8_t symbol, int degree)
       break;
   }
 }String getWeatherData() {
-    String url = "http://api.openweathermap.org/data/2.5/weather?q=Kashimpur,BD&units=metric&appid=68789b9cbdc713af5c9f69bcc979c161";
+    String url = "http://api.openweathermap.org/data/2.5/weather?q=*****LOCATION****&units=metric&appid=*************API KEY****";
     WiFiClient client; 
     HTTPClient http;
     http.begin(client, url);
