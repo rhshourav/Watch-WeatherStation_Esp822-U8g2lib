@@ -61,12 +61,12 @@ OLED SDA to ESP8266 D2 (GPIO 4)
 ```
 Connect buttons and LEDs as per your design.
 ```
-SELECT Button TO ESP8266 GPIO 5;
-UP Button TO ESP8266 GPIO 16;
-DOWN Button TO ESP8266 GPIO 13;
-LEFT Button TO ESP8266 GPIO 15;
-RIGHT Button TO ESP8266 GPIO 4;
-EXIT Button TO ESP8266 GPIO 0;
+SELECT Button TO ESP8266 GPIO 5
+UP Button TO ESP8266 GPIO 16
+DOWN Button TO ESP8266 GPIO 13
+LEFT Button TO ESP8266 GPIO 15
+RIGHT Button TO ESP8266 GPIO 4
+EXIT Button TO ESP8266 GPIO 0
 ```
 Configure WiFi Credentials
 In the MAIN.ino file, update the WiFi credentials:
