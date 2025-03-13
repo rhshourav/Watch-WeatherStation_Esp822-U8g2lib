@@ -9,8 +9,8 @@
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
 // WiFi credentials
-char ssid[] = "TEST";
-char pass[] = "TEST1234";
+char ssid[] = "IOT";
+char pass[] = "admin321";
 
 
 /*************************************************************
@@ -843,7 +843,7 @@ void draw(const char *s, uint8_t symbol, int degree)
       break;
   }
 }String getWeatherData() {
-    String url = "http://api.openweathermap.org/data/2.5/weather?q=*****LOCATION****&units=metric&appid=*************API KEY****";
+    String url = "http://api.openweathermap.org/data/2.5/weather?q=Kashimpur,BD&units=metric&appid=68789b9cbdc713af5c9f69bcc979c161";
     WiFiClient client; 
     HTTPClient http;
     http.begin(client, url);
@@ -1121,7 +1121,7 @@ void ledFade(){
     if (switchState == 0){
     analogWrite(BUILTIN_LED, Blevel);
     Blevel = Blevel+ numIncr;
-    if (Blevel > 255){
+    if (Blevel == 240){
       switchState = 1;
     }
     delay(LedFadeDelay);
@@ -1130,7 +1130,7 @@ void ledFade(){
   if (switchState == 1){
     analogWrite(BUILTIN_LED, Blevel);
     Blevel = Blevel - numIncr;
-    if (Blevel < 0){
+    if (Blevel == 0){
       switchState = 0;
     }
     delay(LedFadeDelay);
